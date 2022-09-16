@@ -178,7 +178,15 @@ public void printPer5second(){
 
 ## JDK定時器:Timer
 
+```mathematica
+	\frac{7x+5}{1+y^2}
+```
 
+$$
+\frac{7x+5}{1+y^2}
+$$
+
+​	
 
 ## Quartz
 
