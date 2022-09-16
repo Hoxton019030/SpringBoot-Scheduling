@@ -151,15 +151,28 @@ public void printPer5second(){
 
 #### 如何插入元素
 
-尾插法，在尾部插入一個新的元素
+尾插法，在尾部插入一個新的元素，然後上浮，浮到符合定義
+
+1. 除了最後一層以外，其他層的節點數需要達到最大(1,2,4,8. ..)，且最後一層節點都靠左排列
+2. 每個節點所儲存的值，必須要大於`小頂堆`或小於`大頂堆`父節點的值
 
 ![image-20220916110137933](https://i.imgur.com/kGnnrnf.png)
 
 ![image-20220916110150486](https://i.imgur.com/YjWGVYi.png)
 
+![image-20220916110656733](https://i.imgur.com/pqhvAgT.png)
 
 
 
+#### 如何刪除元素
+
+將尾部(最後一個節點)放置到堆頂，然後下沉
+
+![image-20220916111249806](https://i.imgur.com/vM6IFnf.png)
+
+![image-20220916111306206](https://i.imgur.com/ltoSIL1.png)
+
+![image-20220916111330270](https://i.imgur.com/spOXHoC.png)
 
 
 
