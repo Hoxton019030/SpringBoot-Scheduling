@@ -13,14 +13,5 @@ import java.time.LocalTime;
 @Component
 @Slf4j
 public class Task {
-    @Scheduled(fixedDelay = 10 * 100)
-    public void printLocalTime() {
-        String time = LocalTime.now().toString();
-        log.info(time);
-    }
 
-    @Scheduled(cron = "0/1 * * * * ?",zone = "Asia/Taipei")
-    public void printPer5second(){
-        log.info("cron");
-    }
 }
