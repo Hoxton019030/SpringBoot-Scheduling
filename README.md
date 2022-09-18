@@ -312,7 +312,7 @@ CronTrigger: 希望以日期作為觸發任務的板機，就用CronTriger
 
 TriggerBulider
 
-用於建立[Trigger](# Trigger)
+用於建立[Trigger](#Trigger)
 
 
 
