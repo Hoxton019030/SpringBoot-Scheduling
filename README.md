@@ -229,7 +229,80 @@ Cron表達式以及其他排程器所採用的底層架構，分成秒輪、分�
 
 ​	
 
-## Quartz
+## 重要API及概念
 
 
+
+```java
+public class Quartz {
+    public static void main(String[] args) {
+        MyJob myJob = new MyJob();
+        JobDetail jobDetail = JobBuilder.newJob(MyJob.class)
+                .withIdentity("job1", "group1")
+                .build();
+
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity("trigger1", "trigger1")
+                .startNow()
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(1).repeatForever())
+                .build();
+
+        try {
+            Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+            scheduler.scheduleJob(jobDetail,trigger);
+            scheduler.start();
+        } catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+        ;
+
+
+    }
+}
+```
+
+```java
+public class MyJob implements Job {
+    @Override
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        System.out.println("MyJob execute:" + new Date());
+    }
+}
+```
+
+
+
+
+
+###  Scheduler
+
+生命週期由ScheduleFactory建立開始，呼叫shutdown方法結束。
+
+當Schduler建立，任何關於Schduling相關的事情，都由它控制
+
++ 新增
++ 刪除
++ 列出所有Job
++ 暫停觸發器
+
+**在Start之前不會做任何事情**
+
+### Job
+
+你希望被排程器排程的任務元件介面，定義如何執行
+
++ 當Job的觸發器觸發時，排程程式的工作執行將呼叫excute()方法
++ 該方法接收一個`JobExcutionContext`物件，為Job提供了豐富的執行時環境，比如`schduler`,`trigger`,`jobDataMap`,`job`,`calender`,`time`
+
+### JobDetail
+
+用於定義Job的各種屬性、各種任務，還可以用來為Job儲存狀態資訊的JobDataMap
+
+### Trigger
+
+觸發任務執行，觸發器可能具有與Job有關的JobDataMap，以便將觸發器觸發的引數傳遞給Job，Quartz本身提供了幾種觸發器`SimpleTrigger`和`CronTrigger`是最常用到的。
+
+SimpleTriger: 用於一次性執行作業或需要在給定的時間觸發一個作業並重複執行N次，且兩次執行時間有Delay
+
+CronTrigger: 希望以日期作為觸發任務的板機，就用CronTriger
 
