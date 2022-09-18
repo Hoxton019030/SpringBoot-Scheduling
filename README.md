@@ -306,3 +306,13 @@ SimpleTriger: 用於一次性執行作業或需要在給定的時間觸發一個
 
 CronTrigger: 希望以日期作為觸發任務的板機，就用CronTriger
 
+### JobBulider
+
+用來建立[JobDetail](#JobDetail)
+
+TriggerBulider
+
+用於建立[Trigger](# Trigger)
+
+
+
