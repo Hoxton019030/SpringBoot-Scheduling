@@ -316,3 +316,20 @@ TriggerBulider
 
 
 
+### Identity
+
+當Job和Trgger在Quartz排程程式中註冊時，會獲得標示鍵，`JobKey`和`TriggerKey`置入group中，易於組織管理，其中name與group必須**唯一**
+
+
+
+### JobDetailMap
+
+實作Map介面，因此具有Key-Value，儲存可序列化資料，供Job在執行時使用。也可以使用`usingJobData(key,value)`在建構JobDetail的時候傳入資料，使用JobDetail.getDataMap()獲取Map
+
+
+
+### 為何要將Job和Trigger分開來?
+
+> While developing Quartz, we decided that it made sense to create a separation between the schedule and the work to be performed on that schedule. This has (in our opinion) many benefits.
+>
+> For example, Jobs can be created and stored in the job scheduler independent of a trigger, and many triggers can be associated with the same job. Another benefit of this loose-coupling is the ability to configure jobs that remain in the scheduler after their associated triggers have expired, so that that it can be rescheduled later, without having to re-define it. It also allows you to modify or replace a trigger without having to re-define its associated job.
