@@ -294,6 +294,10 @@ public class MyJob implements Job {
 + 當Job的觸發器觸發時，排程程式的工作執行將呼叫excute()方法
 + 該方法接收一個`JobExcutionContext`物件，為Job提供了豐富的執行時環境，比如`schduler`,`trigger`,`jobDataMap`,`job`,`calender`,`time`
 
+> 何謂Context(上下文)
+>
+> 可以理解為環境、容器的意思會比上下文更具體一點，它提供了一個程式中全域性的資訊。
+
 ### JobDetail
 
 用於定義Job的各種屬性、各種任務，還可以用來為Job儲存狀態資訊的JobDataMap
@@ -309,6 +313,12 @@ CronTrigger: 希望以日期作為觸發任務的板機，就用CronTriger
 ### JobBulider
 
 用來建立[JobDetail](#JobDetail)
+
+```java
+ JobDetail jobDetail = JobBuilder.newJob(某個繼承了Job的類)...
+```
+
+
 
 TriggerBulider
 
@@ -333,3 +343,13 @@ TriggerBulider
 > While developing Quartz, we decided that it made sense to create a separation between the schedule and the work to be performed on that schedule. This has (in our opinion) many benefits.
 >
 > For example, Jobs can be created and stored in the job scheduler independent of a trigger, and many triggers can be associated with the same job. Another benefit of this loose-coupling is the ability to configure jobs that remain in the scheduler after their associated triggers have expired, so that that it can be rescheduled later, without having to re-define it. It also allows you to modify or replace a trigger without having to re-define its associated job.
+
+
+
+
+
+# 參考
+
+[任務排程框架Quartz快速入門](https://iter01.com/575275.html)
+
+[Quartz教學](https://www.1ju.org/quartz/index)
