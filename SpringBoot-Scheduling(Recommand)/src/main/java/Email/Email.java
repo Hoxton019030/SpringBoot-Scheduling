@@ -16,11 +16,18 @@ public class Email {
 
         JobDetail jobDetail = JobBuilder.newJob(SendEmail.class).build();
 
+        //一秒觸發一次
         Trigger trigger = TriggerBuilder.newTrigger()
-                        .
-        build();
+                        .withSchedule(SimpleScheduleBuilder.simpleSchedule().repeatForever().withIntervalInSeconds(1))
+                        .build();
 
-        scheduler.scheduleJob(jobDetail, trigger);
+        Trigger trigger1 = TriggerBuilder.newTrigger().withIdentity("trigger1", "group1")
+                .startAt(DateBuilder.futureDate(5, DateBuilder.IntervalUnit.SECOND))
+                .endAt()
+                .build();
+
+
+        scheduler.scheduleJob(jobDetail, trigger1);
         scheduler.start();
 
 
