@@ -229,7 +229,127 @@ Cron表達式以及其他排程器所採用的底層架構，分成秒輪、分�
 
 ​	
 
-## Quartz
+## 重要API及概念
 
 
 
+```java
+public class Quartz {
+    public static void main(String[] args) {
+        MyJob myJob = new MyJob();
+        JobDetail jobDetail = JobBuilder.newJob(MyJob.class)
+                .withIdentity("job1", "group1")
+                .build();
+
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity("trigger1", "trigger1")
+                .startNow()
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(1).repeatForever())
+                .build();
+
+        try {
+            Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+            scheduler.scheduleJob(jobDetail,trigger);
+            scheduler.start();
+        } catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+        ;
+
+
+    }
+}
+```
+
+```java
+public class MyJob implements Job {
+    @Override
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        System.out.println("MyJob execute:" + new Date());
+    }
+}
+```
+
+
+
+
+
+###  Scheduler
+
+生命週期由ScheduleFactory建立開始，呼叫shutdown方法結束。
+
+當Schduler建立，任何關於Schduling相關的事情，都由它控制
+
++ 新增
++ 刪除
++ 列出所有Job
++ 暫停觸發器
+
+**在Start之前不會做任何事情**
+
+### Job
+
+你希望被排程器排程的任務元件介面，定義如何執行
+
++ 當Job的觸發器觸發時，排程程式的工作執行將呼叫excute()方法
++ 該方法接收一個`JobExcutionContext`物件，為Job提供了豐富的執行時環境，比如`schduler`,`trigger`,`jobDataMap`,`job`,`calender`,`time`
+
+> 何謂Context(上下文)
+>
+> 可以理解為環境、容器的意思會比上下文更具體一點，它提供了一個程式中全域性的資訊。
+
+### JobDetail
+
+用於定義Job的各種屬性、各種任務，還可以用來為Job儲存狀態資訊的JobDataMap
+
+### Trigger
+
+觸發任務執行，觸發器可能具有與Job有關的JobDataMap，以便將觸發器觸發的引數傳遞給Job，Quartz本身提供了幾種觸發器`SimpleTrigger`和`CronTrigger`是最常用到的。
+
+SimpleTriger: 用於一次性執行作業或需要在給定的時間觸發一個作業並重複執行N次，且兩次執行時間有Delay
+
+CronTrigger: 希望以日期作為觸發任務的板機，就用CronTriger
+
+### JobBulider
+
+用來建立[JobDetail](#JobDetail)
+
+```java
+ JobDetail jobDetail = JobBuilder.newJob(某個繼承了Job的類)...
+```
+
+
+
+TriggerBulider
+
+用於建立[Trigger](#Trigger)
+
+
+
+### Identity
+
+當Job和Trgger在Quartz排程程式中註冊時，會獲得標示鍵，`JobKey`和`TriggerKey`置入group中，易於組織管理，其中name與group必須**唯一**
+
+
+
+### JobDetailMap
+
+實作Map介面，因此具有Key-Value，儲存可序列化資料，供Job在執行時使用。也可以使用`usingJobData(key,value)`在建構JobDetail的時候傳入資料，使用JobDetail.getDataMap()獲取Map
+
+
+
+### 為何要將Job和Trigger分開來?
+
+> While developing Quartz, we decided that it made sense to create a separation between the schedule and the work to be performed on that schedule. This has (in our opinion) many benefits.
+>
+> For example, Jobs can be created and stored in the job scheduler independent of a trigger, and many triggers can be associated with the same job. Another benefit of this loose-coupling is the ability to configure jobs that remain in the scheduler after their associated triggers have expired, so that that it can be rescheduled later, without having to re-define it. It also allows you to modify or replace a trigger without having to re-define its associated job.
+
+
+
+
+
+# 參考
+
+[任務排程框架Quartz快速入門](https://iter01.com/575275.html)
+
+[Quartz教學](https://www.1ju.org/quartz/index)
