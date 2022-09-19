@@ -22,9 +22,9 @@ public class HelloJob {
                     .build();
 
             scheduler.scheduleJob(jobDetail,trigger);
-            scheduler.start();
-//            scheduler.shutdown();
+//            scheduler.start();
 
+//            scheduler.shutdown();
         } catch (SchedulerException e) {
             throw new RuntimeException(e);
         }

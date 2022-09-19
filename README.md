@@ -231,7 +231,11 @@ Cron表達式以及其他排程器所採用的底層架構，分成秒輪、分�
 
 ## 重要API及概念
 
+> 記得Job類一定要是**public class**，不然Scheduler會讀不到
 
+
+
+釋例一：
 
 ```java
 public class Quartz {
@@ -272,7 +276,61 @@ public class MyJob implements Job {
 
 
 
+釋例二
 
+
+
+```java
+public class HelloJob {
+    public static void main(String[] args) {
+        try {
+            Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+            scheduler.start();
+            JobDetail jobDetail = JobBuilder.newJob(SayHello.class)
+                    .withIdentity("job1", "group1")  //Job1是名字，具有唯一性，group1是這個Job屬於哪一組，同一組的Job可以共享相同的邏輯來處理Job。需要name與Job才可以組成一個JobKey
+                    .usingJobData("username", "Hoxton")
+                    .usingJobData("age", "20")
+                    .withDescription("desc-demo")
+                    .build();
+
+            SimpleTrigger trigger = TriggerBuilder.newTrigger()
+                    .withIdentity("trigger1", "group1")
+                    .startNow()
+                    .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(1).repeatForever())
+                    .build();
+
+            scheduler.scheduleJob(jobDetail,trigger);
+            scheduler.start();
+
+//            scheduler.shutdown();
+        } catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+```java
+@Slf4j
+@NoArgsConstructor
+public class SayHello implements Job {
+
+    @Override
+    public void execute(JobExecutionContext context) throws JobExecutionException {
+        JobDetail jobDetail = context.getJobDetail();//從context中獲取屬性
+        JobKey key = jobDetail.getKey();
+        Class<? extends Job> jobClass = jobDetail.getJobClass();
+        String description = jobDetail.getDescription();
+
+        JobDataMap jobDataMap = jobDetail.getJobDataMap();
+        String username = jobDataMap.getString("username");
+        int age = jobDataMap.getIntValue("age");
+
+        log.info("\nJobKey : {},\n JobClass : {},\n JobDesc : {},\n username : {},\n age : {}",
+                key, jobClass.getName(), description, username, age);
+    }
+}
+```
 
 ###  Scheduler
 
@@ -289,18 +347,65 @@ public class MyJob implements Job {
 
 ### Job
 
-你希望被排程器排程的任務元件介面，定義如何執行
+你希望被排程器排程的任務元件介面，定義如何執行，是正在執行的作業例項，一個Job可以建立多個JobDetail，擁有不同的JobDataMap。本身implement了Job類
+
+
+
+
+
+
+
+
+
+
+
+```mermaid
+graph TD;
+
+Job ---> JodDetail1 & JodDetail2 & JodDetail3 & JodDetail...
+```
+
+
+
+
+
+```java
+public class SendEmail implements Job {
+    @Override
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        System.out.println("SendEmail");
+    }
+}
+```
+
+
 
 + 當Job的觸發器觸發時，排程程式的工作執行將呼叫excute()方法
 + 該方法接收一個`JobExcutionContext`物件，為Job提供了豐富的執行時環境，比如`schduler`,`trigger`,`jobDataMap`,`job`,`calender`,`time`
+
+
 
 > 何謂Context(上下文)
 >
 > 可以理解為環境、容器的意思會比上下文更具體一點，它提供了一個程式中全域性的資訊。
 
+
+
 ### JobDetail
 
-用於定義Job的各種屬性、各種任務，還可以用來為Job儲存狀態資訊的JobDataMap
+用於定義Job的各種屬性、各種任務，還可以用來為Job儲存狀態資訊的JobDataMap，是將Job加入scheduler時，所需要創建的一個物件，它包含了各種屬性設置，以及用於存取job實例狀態訊息的JobDataMap，在創建JobDetail時，需要將欲執行的類名傳遞給JobDetail，這樣schedule就知道要執行何種類型的job。
+
+```java
+JobDetail jobDetail=JobBulider.newJob(Job.class).bulid();
+```
+
+
+
+
+
+### JobDataMap
+
+實作Map介面，因此具有Key-Value，儲存可序列化資料，供Job在執行時使用。也可以使用`usingJobData(key,value)`在建構JobDetail的時候傳入資料，使用JobDetail.getDataMap()獲取Map
 
 ### Trigger
 
@@ -316,6 +421,13 @@ CronTrigger: 希望以日期作為觸發任務的板機，就用CronTriger
 
 ```java
  JobDetail jobDetail = JobBuilder.newJob(某個繼承了Job的類)...
+ 
+     JobDetail jobDetail = JobBuilder.newJob(SayHello.class)
+                    .withIdentity("job1", "group1")
+                    .usingJobData("username", "Hoxton")
+                    .usingJobData("age", "20")
+                    .withDescription("desc-demo")
+                    .build();
 ```
 
 
@@ -332,9 +444,7 @@ TriggerBulider
 
 
 
-### JobDetailMap
 
-實作Map介面，因此具有Key-Value，儲存可序列化資料，供Job在執行時使用。也可以使用`usingJobData(key,value)`在建構JobDetail的時候傳入資料，使用JobDetail.getDataMap()獲取Map
 
 
 
@@ -343,6 +453,19 @@ TriggerBulider
 > While developing Quartz, we decided that it made sense to create a separation between the schedule and the work to be performed on that schedule. This has (in our opinion) many benefits.
 >
 > For example, Jobs can be created and stored in the job scheduler independent of a trigger, and many triggers can be associated with the same job. Another benefit of this loose-coupling is the ability to configure jobs that remain in the scheduler after their associated triggers have expired, so that that it can be rescheduled later, without having to re-define it. It also allows you to modify or replace a trigger without having to re-define its associated job.
+
+
+
+
+
+## Job與JobDetail的一些說明
+
++ Job是正在執行的作業，JobDetail則是作業的定義
++ 一個Job可以創建多個JobDetail，擁有不同的JobDataMap
+
+舉例來說，今天寫了一個定時寄送信件的Job，叫做SendEmailJob，我們希望這個Job可以寄給客戶，然後在cc給你的主管，所以需要創建兩個不同的JobDetail，比如說SendEmailToClient、SendEmailToAdministor，並透過JobDataMap綁定參數傳遞至JobDetail中，這兩個JobDetail擁有各自獨立的JobDataMap，實現起來會更靈活。
+
+
 
 
 
