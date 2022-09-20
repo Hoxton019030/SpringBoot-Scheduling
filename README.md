@@ -405,7 +405,38 @@ JobDetail jobDetail=JobBulider.newJob(Job.class).bulid();
 
 ### JobDataMap
 
-實作Map介面，因此具有Key-Value，儲存可序列化資料，供Job在執行時使用。也可以使用`usingJobData(key,value)`在建構JobDetail的時候傳入資料，使用JobDetail.getDataMap()獲取Map
+實作Map介面，因此具有Key-Value，儲存可序列化資料，供Job在執行時使用。也可以使用`usingJobData(key,value)`在建構JobDetail的時候傳入資料，使用JobDetail.getDataMap()獲取Map。可以再透過jobDataMap取出裡面的數據
+
+```java
+ JobDetail job = JobBuilder.newJob(HelloJob.class)
+ 		                  .withIdentity("helloJob", "hello")//給job命名並分組
+ 		                  .usingJobData("jobdd", "hello job")//通過JobBuilder的usingJobData方法給JobDataMap中塞入數據
+ 		                  .build();
+
+```
+
+```java
+public class HelloJob implements Job {
+
+	@Override
+	public void execute(JobExecutionContext context) throws JobExecutionException {
+		System.err.println(context.getJobDetail().getKey());// JobDetail的key又他的name和group組成
+		System.err.println(context.getTrigger().getKey());// Trigger的key又他的name和group組成
+		System.err.println(context.getJobDetail().getJobDataMap().get("jobdd"));
+		System.err.println("hello,quartz");
+	}
+}
+```
+
+會輸出
+
+`hello.helloJob
+
+hello.helloTrigger
+
+hello job
+
+hello, quartz
 
 ### Trigger
 
