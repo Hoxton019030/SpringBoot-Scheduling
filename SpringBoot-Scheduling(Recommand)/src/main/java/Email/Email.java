@@ -14,22 +14,26 @@ public class Email {
 
         Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
 
-        JobDetail jobDetail = JobBuilder.newJob(SendEmail.class).build();
+        JobDetail jobDetail = JobBuilder.newJob(SendEmail.class)
+                .withIdentity("job1","group1")
+                .build();
 
         //一秒觸發一次
         Trigger trigger = TriggerBuilder.newTrigger()
-                        .withSchedule(SimpleScheduleBuilder.simpleSchedule().repeatForever().withIntervalInSeconds(1))
-                        .build();
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule().repeatForever().withIntervalInSeconds(1))
+                .build();
+        Date date = new Date();
 
-        Trigger trigger1 = TriggerBuilder.newTrigger().withIdentity("trigger1", "group1")
-                .startAt(DateBuilder.futureDate(5, DateBuilder.IntervalUnit.SECOND))
-                .endAt()
+        Trigger trigger1 = TriggerBuilder.newTrigger()
+                .withIdentity("trigger1", "group1")
+                .startAt(date)
                 .build();
 
+        TriggerBuilder.newTrigger()
+                .withIdentity("trigger2", "group1").build();
 
         scheduler.scheduleJob(jobDetail, trigger1);
         scheduler.start();
-
 
 
     }

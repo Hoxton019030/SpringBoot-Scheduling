@@ -440,9 +440,61 @@ hello, quartz
 
 觸發任務執行，觸發器可能具有與Job有關的JobDataMap，以便將觸發器觸發的引數傳遞給Job，Quartz本身提供了幾種觸發器`SimpleTrigger`和`CronTrigger`是最常用到的。
 
-SimpleTriger: 用於一次性執行作業或需要在給定的時間觸發一個作業並重複執行N次，且兩次執行時間有Delay
+#### **SimpleTriger**: 用於一次性執行作業或需要在給定的時間觸發一個作業並重複執行N次，且兩次執行時間有Delay。用在具體的時間點，並已指定的間隔時間重複執行若干次，它包含了幾種屬性：
 
-CronTrigger: 希望以日期作為觸發任務的板機，就用CronTriger
+1. 開始時間
+2. 結束時間
+3. 重複次數
+4. 重複間隔
+
+釋例一：立刻觸發一次，然後停止
+
+```java
+  Date date = new Date();
+        Trigger trigger1 = TriggerBuilder.newTrigger()
+                .withIdentity("trigger1", "group1")
+                .startAt(date)
+                .build();
+```
+
+釋例二：指定時間觸發，每隔十秒執行一次，重複10次
+
+```java
+ trigger = newTrigger()
+        .withIdentity("trigger3", "group1")
+        .startAt(myTimeToStartFiring)  // if a start time is not given (if this line were omitted), "now" is implied
+        .withSchedule(simpleSchedule()
+            .withIntervalInSeconds(10)
+            .withRepeatCount(10)) // note that 10 repeats will give a total of 11 firings
+        .forJob(myJob) // identify job with handle to its JobDetail itself                   
+        .build();
+```
+
+釋例三：5分鐘以後開始觸發，僅執行一次
+
+```java
+ trigger = (SimpleTrigger) newTrigger() 
+        .withIdentity("trigger5", "group1")
+        .startAt(futureDate(5, IntervalUnit.MINUTE)) // use DateBuilder to create a date in the future
+        .forJob(myJobKey) // identify job with its JobKey
+        .build();
+```
+
+釋例四：立即觸發，每個5分鐘執行一次，直到22:00：
+
+```java
+trigger = newTrigger()
+        .withIdentity("trigger7", "group1")
+        .withSchedule(simpleSchedule()
+            .withIntervalInMinutes(5)
+            .repeatForever())
+        .endAt(dateOf(22, 0, 0))
+        .build();
+```
+
+
+
+#### **CronTrigger**: 希望以日期作為觸發任務的板機，就用CronTriger
 
 ### JobBulider
 
