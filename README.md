@@ -11,6 +11,8 @@
 
 # Spring Schedule
 
+
+
 ## 步驟
 
 1. 在啟動類上加上@EnableScheduling
@@ -67,13 +69,25 @@ public void printPer5second(){
 
 
 
-## Cron表達式
+## Cron表達式(七子表達式)
 
-| 秒   | 分   | 時   | 日   | 月   | 周   |
-| ---- | ---- | ---- | ---- | ---- | ---- |
-| 1    | *    | *    | *    | *    | ?    |
+[表達式生成工具](https://cron.qqe2.com/)
+
+Cron語源來自Chronos，是希臘神話中掌管時間的神柯羅諾斯(Chronos)。
+
+| 秒   | 分   | 時   | 日   | 月   | 周   | 年(可選) |
+| ---- | ---- | ---- | ---- | ---- | ---- | -------- |
+| 1    | *    | *    | *    | *    | ?    | ?        |
 
 
+
++ 秒：0-59
++ 分：0-59
++ 時 ：0-23
++ 日：1-31
++ 月：0-11或"JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC"
++ 周：1-7或SUN, MON, TUE, WED, THU, FRI,SAT
++ 年
 
 想像一個時鐘...
 
@@ -201,13 +215,25 @@ public void printPer5second(){
 
 Cron表達式以及其他排程器所採用的底層架構，分成秒輪、分輪、小時輪、日輪、周輪、月輪、年輪...，月輪迭代到了，就將任務取出放到天輪中執行...，以此類推
 
-##### Cron表達式
+## Cron表達式(七子表達式)
 
-| 秒   | 分   | 時   | 日   | 月   | 周   |
-| ---- | ---- | ---- | ---- | ---- | ---- |
-| 1    | *    | *    | *    | *    | ?    |
+[表達式生成工具](https://cron.qqe2.com/)
+
+Cron語源來自Chronos，是希臘神話中掌管時間的神柯羅諾斯(Chronos)。
+
+| 秒   | 分   | 時   | 日   | 月   | 周   | 年(可選) |
+| ---- | ---- | ---- | ---- | ---- | ---- | -------- |
+| 1    | *    | *    | *    | *    | ?    | ?        |
 
 
+
++ 秒：0-59
++ 分：0-59
++ 時 ：0-23
++ 日：1-31
++ 月：0-11或"JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC"
++ 周：1-7或SUN, MON, TUE, WED, THU, FRI,SAT
++ 年
 
 想像一個時鐘...
 
@@ -219,11 +245,20 @@ Cron表達式以及其他排程器所採用的底層架構，分成秒輪、分�
 | 每個月 1 號中午 12 點       | 0 0 12 1 * ?   |
 | 1 月每天中午 12 點，每 5 秒 | 0/5 0 12 * 1 ? |
 
-##### JDK定時器:Timer
 
 
-
-
+| 字元 | 意義                                                         |
+| :--- | :----------------------------------------------------------- |
+| `*`  | 表達任意值，所有值都可以匹配                                 |
+| `?`  | 只用在 `日` 跟 `周` 的值域，有點表達 don’t care 的概念，無所謂，不關心到底是什麼值 |
+| `-`  | 指定範圍，前後接數字: 10-12                                  |
+| `,`  | 指定離散的選項: 1,5,6,8，或者的概念                          |
+| `/`  | 指定增量，表達 `每` 的概念: 0/5 意旨從 0 開始每 5 單位       |
+| `L`  | 用在 `月` 跟 `周` 的值域。在月的話表達最後一天，在周的話前面可以加上數字 3L 表示該月最後一個星期二 |
+| `W`  | 用在`日`的值域表示距離最近的該月工作日: 15W，距離 15 號最近的工作日，可能往前也可能往後 |
+| `LW` | 用在`日`的值域，表示最後一周的工作日                         |
+| `#`  | 用在`周`的值域，指定特定周的特定日: “4#2” 表示第二周的星期三 |
+| `C`  | 用在`日`跟`周`的值域，指某特定個日期的後一天: 在`日`中寫 3C 指該月 3 號的後一天，在`周`中寫 2C 指該周星期一的後一天 |
 
 
 
@@ -440,12 +475,16 @@ hello, quartz
 
 觸發任務執行，觸發器可能具有與Job有關的JobDataMap，以便將觸發器觸發的引數傳遞給Job，Quartz本身提供了幾種觸發器`SimpleTrigger`和`CronTrigger`是最常用到的。
 
-#### **SimpleTriger**: 用於一次性執行作業或需要在給定的時間觸發一個作業並重複執行N次，且兩次執行時間有Delay。用在具體的時間點，並已指定的間隔時間重複執行若干次，它包含了幾種屬性：
+#### **SimpleTriger**
+
+用於一次性執行作業或需要在給定的時間觸發一個作業並重複執行N次，且兩次執行時間有Delay。用在具體的時間點，並已指定的間隔時間重複執行若干次，它包含了幾種屬性：
 
 1. 開始時間
 2. 結束時間
 3. 重複次數
 4. 重複間隔
+
+
 
 釋例一：立刻觸發一次，然後停止
 
@@ -492,9 +531,81 @@ trigger = newTrigger()
         .build();
 ```
 
+釋例五：在下一小時整點觸發，每個2小時執行一次，一直重複：
+
+```java
+  trigger = newTrigger()
+        .withIdentity("trigger8") // because group is not specified, "trigger8" will be in the default group
+        .startAt(evenHourDate(null)) // get the next even-hour (minutes and seconds zero ("00:00"))
+        .withSchedule(simpleSchedule()
+            .withIntervalInHours(2)
+            .repeatForever())
+        // note that in this example, 'forJob(..)' is not called which is valid 
+        // if the trigger is passed to the scheduler along with the job  
+        .build();
+
+    scheduler.scheduleJob(trigger, job);
+```
 
 
-#### **CronTrigger**: 希望以日期作為觸發任務的板機，就用CronTriger
+
+#### **CronTrigger**
+
+希望以日期作為觸發任務的板機，就用CronTriger，**實務上比較常用這個**
+
+```java
+    CronTrigger trigger2 = TriggerBuilder.newTrigger()
+                .withIdentity("trigger3", "group1")
+                .withSchedule(CronScheduleBuilder.cronSchedule("0/2 * * * * ?"))
+                .build();
+```
+
+```java
+package com.how2java;
+   
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.TriggerBuilder.newTrigger;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+  
+import java.util.Date;
+ 
+import org.quartz.CronTrigger;
+import org.quartz.DateBuilder;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SimpleTrigger;
+import org.quartz.impl.StdSchedulerFactory;
+   
+public class TestQuartz {
+    public static void main(String[] args) throws Exception{
+            Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+   
+            Date startTime = DateBuilder.nextGivenSecondDate(null, 8);
+  
+            JobDetail job = newJob(MailJob.class).withIdentity("mailJob", "mailGroup").build();
+  
+            CronTrigger trigger = newTrigger().withIdentity("trigger1", "group1").withSchedule(cronSchedule("0/2 * * * * ?"))
+                    .build();
+  
+            // schedule it to run!
+            Date ft = scheduler.scheduleJob(job, trigger);
+             
+            System.out.println("使用的Cron表达式是："+trigger.getCronExpression());
+//            System.out.printf("%s 这个任务会在 %s 准时开始运行，累计运行%d次，间隔时间是%d毫秒%n", job.getKey(), ft.toLocaleString(), trigger.getRepeatCount()+1, trigger.getRepeatInterval());
+             
+            scheduler.start();
+               
+            //等待200秒，让前面的任务都执行完了之后，再关闭调度器
+            Thread.sleep(200000);
+            scheduler.shutdown(true);
+    }
+}
+```
+
+
+
+
 
 ### JobBulider
 
@@ -553,6 +664,10 @@ TriggerBulider
 
 
 # 參考
+
+
+
+[官方文檔](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/quick-start.html)
 
 [任務排程框架Quartz快速入門](https://iter01.com/575275.html)
 

@@ -29,10 +29,16 @@ public class Email {
                 .startAt(date)
                 .build();
 
+        CronTrigger trigger2 = TriggerBuilder.newTrigger()
+                .withIdentity("trigger3", "group1")
+                .withSchedule(CronScheduleBuilder.cronSchedule("40 * * * * ?"))
+                .build();
+
+
         TriggerBuilder.newTrigger()
                 .withIdentity("trigger2", "group1").build();
 
-        scheduler.scheduleJob(jobDetail, trigger1);
+        scheduler.scheduleJob(jobDetail, trigger2);
         scheduler.start();
 
 
