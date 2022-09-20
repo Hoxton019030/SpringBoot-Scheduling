@@ -401,8 +401,6 @@ JobDetail jobDetail=JobBulider.newJob(Job.class).bulid();
 
 
 
-
-
 ### JobDataMap
 
 實作Map介面，因此具有Key-Value，儲存可序列化資料，供Job在執行時使用。也可以使用`usingJobData(key,value)`在建構JobDetail的時候傳入資料，使用JobDetail.getDataMap()獲取Map。可以再透過jobDataMap取出裡面的數據
@@ -506,4 +504,6 @@ TriggerBulider
 
 [任務排程框架Quartz快速入門](https://iter01.com/575275.html)
 
-[Quartz教學](https://www.1ju.org/quartz/index)
+[Quartz教學基礎](https://www.1ju.org/quartz/index)
+
+[觸發器詳細定義](https://www.796t.com/content/1545519797.html)
